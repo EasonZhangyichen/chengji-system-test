@@ -1,0 +1,130 @@
+/* 全局样式 */
+body {
+    font-family: "Microsoft YaHei", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* 导航栏样式 */
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* 卡片样式 */
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 表格样式 */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: 0.25rem;
+    padding: 0.375rem 1rem;
+}
+
+/* 登录页面样式 */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 成绩详情页面样式 */
+.score-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.score-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+/* 成绩趋势页面样式 */
+.chart-container {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .score-value {
+        font-size: 2rem;
+    }
+}
+
+/* 自定义颜色 */
+.bg-light-blue {
+    background-color: #e3f2fd;
+}
+
+.text-primary-dark {
+    color: #0056b3;
+}
+
+/* 缺考标记样式 */
+.absent-mark {
+    color: #dc3545;
+    font-style: italic;
+}
+
+/* 排名指示器样式 */
+.rank-indicator {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.rank-excellent {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.rank-good {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.rank-average {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 动画效果 */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+} 

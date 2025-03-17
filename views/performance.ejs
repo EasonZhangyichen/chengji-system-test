@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩查询系统 - 成绩趋势</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">学生成绩查询系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard?id=<%= studentId %>&name=<%= encodeURIComponent(studentName) %>">考试列表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/performance?id=<%= studentId %>&name=<%= encodeURIComponent(studentName) %>">成绩趋势</a>
+                    </li>
+                </ul>
+                <span class="navbar-text">
+                    <i class="bi bi-person-circle me-2"></i><%= studentName %> (<%= studentId %>)
+                    <a href="/" class="btn btn-sm btn-outline-light ms-3">退出</a>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">成绩趋势分析</h4>
+            </div>
+            <div class="card-body">
+                <% 
+                let hasData = false;
+                try {
+                    const parsedData = JSON.parse(performanceData);
+                    hasData = parsedData.examNames && parsedData.examNames.length > 0;
+                } catch (e) {
+                    hasData = false;
+                }
+                
+                if (hasData) { 
+                %>
+                <div class="chart-container" style="position: relative; height:60vh; width:100%">
+                    <canvas id="ranksChart"></canvas>
+                </div>
+                <% } else { %>
+                <div class="alert alert-info">
+                    暂无考试数据，无法生成成绩趋势图。请先上传考试成绩Excel文件。
+                </div>
+                <% } %>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="/dashboard?id=<%= studentId %>&name=<%= encodeURIComponent(studentName) %>" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> 返回考试列表
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-3 bg-white border-top">
+        <div class="container text-center text-muted">
+            <small>© 2023 学生成绩查询系统</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <% if (hasData) { %>
+    <script>
+        // 解析从服务器传来的数据
+        const performanceData = JSON.parse('<%- performanceData %>');
+        
+        // 处理数据，完全去掉25年03月04日考试的数据
+        const processedData = {
+            examNames: [],
+            chinese: { 
+                ranks: []
+            },
+            math: { 
+                ranks: []
+            },
+            english: { 
+                ranks: []
+            },
+            total: { 
+                ranks: []
+            }
+        };
+        
+        // 遍历所有考试，过滤掉25年03月04日的考试
+        for (let i = 0; i < performanceData.examNames.length; i++) {
+            const examName = performanceData.examNames[i];
+            
+            // 检查是否为25年03月04日的考试
+            if (!examName.includes('25年03月04日')) {
+                // 只保留非25年03月04日的考试数据
+                processedData.examNames.push(examName);
+                processedData.chinese.ranks.push(performanceData.chinese.ranks[i] !== null ? parseFloat(performanceData.chinese.ranks[i]) * 100 : null);
+                processedData.math.ranks.push(performanceData.math.ranks[i] !== null ? parseFloat(performanceData.math.ranks[i]) * 100 : null);
+                processedData.english.ranks.push(performanceData.english.ranks[i] !== null ? parseFloat(performanceData.english.ranks[i]) * 100 : null);
+                processedData.total.ranks.push(performanceData.total.ranks[i] !== null ? parseFloat(performanceData.total.ranks[i]) * 100 : null);
+            }
+        }
+        
+        // 设置排名趋势图
+        const ranksCtx = document.getElementById('ranksChart').getContext('2d');
+        const ranksChart = new Chart(ranksCtx, {
+            type: 'line',
+            data: {
+                labels: processedData.examNames,
+                datasets: [
+                    {
+                        label: '语文',
+                        data: processedData.chinese.ranks,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    },
+                    {
+                        label: '数学',
+                        data: processedData.math.ranks,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    },
+                    {
+                        label: '英语',
+                        data: processedData.english.ranks,
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    },
+                    {
+                        label: '三门总分',
+                        data: processedData.total.ranks,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '排名前百分比 (%)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '考试名称',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '<%= studentName %> 的语数英历次考试排名趋势',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 12
+                            },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                } else {
+                                    label += '缺考';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    <% } %>
+</body>
+</html> 
